@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CareBot – Your Mental Health Friend</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="chat-container">
+        <div class="header">
+            <img src="{{ url_for('static', filename='bot.png') }}" class="bot-img" alt="CareBot">
+            <h1>CareBot</h1>
+            <p class="quote">"Every day may not be good, but there's something good in every day."</p>
+        </div>
+        <div class="chat-box" id="chat-box">
+            <div class="bot-message">👋 Hi! I'm CareBot. How are you feeling today?</div>
+        </div>
+        <div class="input-area">
+            <input type="text" id="user-input" placeholder="Type your feelings..." autocomplete="off">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        async function sendMessage() {
+            const input = document.getElementById("user-input");
+            const message = input.value.trim();
+            if (message === "") return;
+
+            addMessage("user", message);
+            input.value = "";
+
+            const chatBox = document.getElementById("chat-box");
+            const typingMsg = document.createElement("div");
+            typingMsg.className = "bot-message typing";
+            typingMsg.innerText = "CareBot is typing...";
+            chatBox.appendChild(typingMsg);
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            const response = await fetch("/get", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: new URLSearchParams({ msg: message })
+            });
+
+            const data = await response.json();
+            typingMsg.remove();
+            addMessage("bot", data.reply);
+        }
+
+        function addMessage(sender, text) {
+            const msg = document.createElement("div");
+            msg.className = sender === "user" ? "user-message" : "bot-message";
+            msg.innerText = text;
+            const chatBox = document.getElementById("chat-box");
+            chatBox.appendChild(msg);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+    </script>
+</body>
+</html>
